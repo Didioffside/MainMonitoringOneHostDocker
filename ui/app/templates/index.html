@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkbox Options</title>
+    <script>
+        // Extract the token from the query parameter
+        //const urlParams = new URLSearchParms(window.location.search);
+        //const token = urlParams.get('access_token');
+        const token = document.cookie.replace(new RegExp('(?:(?:^|.*;\\s*)${cookie_name}\\s*\\=\\s*([^;]*).*$)|^.*$'), "$1");
+
+        // Set the token in the Authorization header for subsequent requests
+        if (token) {
+            fetch('/', {
+                headers: {
+                    'Authorization': 'Bearer' + token
+                }
+            })
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => console.error(error));
+        }
+    </script>
+    <style>
+        .metric-card {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .metric-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Select Jobs and Container Metrics To Monitor</h1>
+    <form method="post">
+        <!--<h2>Jobs</h2>
+        <h3>Select the Jobs/Services to Monitor</h3>
+        {% for job in jobs %}
+            <input type="checkbox" name="job" value="{{ job }}"
+                {% if job in selected_jobs %}checked{% endif %}>
+            {{ job }}<br>
+        {% endfor %}-->
+        <br>
+        <h2>Container Metrics</h2>
+        <h3>Select the Metrics to Not Monitor</h3>
+        {% for option in options %}
+            {% set display_name = "Not Monitor" %}
+            {% set second_display_name = "In which services" %}
+            <div class="metric-card">
+                <div class="metric-title">{{ option }}</div>
+                <input type="checkbox" name="option" value="{{ option }}"
+                    {% if option in selected_options %}checked{% endif %}>
+                {{ display_name }}<br>
+                <br>
+                <div class="metric-title">{{ second_display_name }}</div>
+                {% for job in jobs %}
+                    <input type="checkbox" name="job_{{ option }}[]" value="{{ job }}"
+                    {% if selected_jobs_by_option.get(option, []) and job in selected_jobs_by_option[option] %}checked{% endif %}>
+                    {{ job }}<br>
+                {% endfor %}
+            </div>  
+        {% endfor %}
+        <br>
+        <h2>Host (NODE) Metrics</h2>
+        <h3>Select the Metrics to Not Monitor</h3>
+        {% for option_node in options_node %}
+            {% set display_name_second = "Not Monitor" %}
+            <div class="metric-card">
+                <div class="metric-title">{{ option_node }}</div>
+                <input type="checkbox" name="option_node" value="{{ option_node }}"
+                    {% if option_node in selected_options_node %}checked{% endif %}>
+                {{ display_name_second }}<br> 
+            </div>
+        {% endfor %}
+        <br>
+        <h2>Fluent-bit/Logs</h2>
+        <h3>Select the Jobs/Services to Not Collect Logs From </h3>
+        {% for option_log in options_logs %}
+            <input type="checkbox" name="option_log" value="{{ option_log }}"
+                {% if option_log in selected_options_logs %}checked{% endif %}>
+            {{ option_log }}<br>
+        {% endfor %}
+        <br>
+        <h2>Networks</h2>
+        <h3>Select the Networks to Not Collect Metrics From </h3>
+        {% for option_net in networks %}
+            <input type="checkbox" name="option_net" value="{{ option_net }}"
+                {% if option_net in selected_options_net %}checked{% endif %}>
+            {{ option_net }}<br>
+        {% endfor %}
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+
+</body>
+</html>

@@ -1,0 +1,144 @@
+version: '3'
+services:
+  #PROMETHEUS
+  prometheus:
+    image: prom/prometheus
+    privileged: true
+    container_name: prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus:/var/lib/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    restart: always
+    networks:
+      - monitoring
+  #NODE-EXPORTER
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: always
+    ports:
+      - "9100:9100"
+    depends_on:
+      - prometheus
+    volumes:
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /proc:/host/proc:ro
+      - /etc/hostname:/etc/nodename
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--collector.textfile.directory=/home/'
+    networks:
+      - monitoring
+  #CADVISOR  
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    privileged: true
+    restart: always
+    container_name: cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/snap/docker/common/var-lib-docker:/var/lib/docker:ro
+      - /cgroup:/cgroup:ro
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
+
+  #FLUENTBIT
+  fluent-bit:
+    image: fluent/fluent-bit:latest
+    restart: always
+    configs:
+      - source: fluentbit-config
+        target: /fluent-bit/etc/fluent-bit.conf
+      - source: fluentbit-parsers-config
+        target: /fluent-bit/etc/parsers.conf
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: ["fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf", "--enable-hot-reload"]
+    container_name: fluent-bit
+    ports:
+      - "24224:24224"
+    networks:
+      - monitoring
+
+  #UI
+  ui:
+    #image: didioffside/ui:latest
+    build: ./ui
+    container_name: ui
+    privileged: true
+    restart: always
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    cpus: 0.25
+    mem_limit: 200m
+    volumes:
+      - ./ui/app/aux_files/options.txt:/app/options.txt
+      - ./ui/app/aux_files/selected_options.txt:/app/selected_options.txt
+      - ./ui/app/aux_files/selected_jobs.txt:/app/selected_jobs.txt
+      - ./ui/app/aux_files/selected_options_node.txt:/app/selected_options_node.txt
+      - ./ui/app/aux_files/selected_options_logs.txt:/app/selected_options_logs.txt
+      - ./ui/app/aux_files/selected_options_net.txt:/app/selected_options_net.txt
+      - ./ui/app/aux_files/aux.txt:/app/aux.txt
+      - ./ui/app/aux_files/try.txt:/app/try.txt
+      - ./prometheus:/app/prometheus
+      - ./fluent-bit:/app/fluent-bit
+      - ./ui/app/aux_files/aux.yml:/app/aux.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./get_metrics.py:/app/get_metrics.py
+      - ./telegraf/telegraf.conf:/app/telegraf/telegraf.conf
+      - ./ips.txt:/app/ips.txt
+      - ./backups:/backups
+      - ./backup_script.sh:/app/backup_script.sh
+    depends_on:
+      - prometheus
+      - cadvisor
+      - node-exporter
+
+  #Telegraf
+  telegraf:
+    image: telegraf:latest
+    container_name: telegraf
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    networks:
+      - monitoring
+    restart: always
+
+configs:
+  fluentbit-config:
+    file: ./fluent-bit/fluent-bit.conf
+  fluentbit-parsers-config:
+    file: ./fluent-bit/parsers.conf
+
+volumes:
+  prometheus:
+    driver: local
+
+#networks:
+  #monitoring:
+    #external: true
+    #name: monitoring
+
+
+networks:
+  monitoring:
+    external: true
+    name: monitoring

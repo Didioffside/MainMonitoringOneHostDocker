@@ -1,0 +1,9 @@
+,__name__,container_label_com_docker_compose_service,cpu,id,name,timestamp,value
+0,container_cpu_usage_seconds_total,fluent-bit,total,/system.slice/docker-38fca07ae19c8afea09a7b3aa11af06fdf64062ab41f5dfdd213d12819f06b43.scope,fluent-bit,2023-12-13 14:29:30.763000064,0.348325
+1,container_cpu_usage_seconds_total,nginx,total,/system.slice/docker-2f2ef553a4fed1ad71f9be936b7bdc8f445da9bdb5366361f9c6d52a908725eb.scope,nginx,2023-12-13 14:29:30.763000064,0.113899
+2,container_cpu_usage_seconds_total,cadvisor,total,/system.slice/docker-e29de973c0c88c51928e17ca0ee0b6cf8bca17f0e3bb91fb8924c88e6a9cf098.scope,cadvisor,2023-12-13 14:29:30.763000064,35.531289
+3,container_cpu_usage_seconds_total,service1,total,/system.slice/docker-f3d3274c94429df082ad7ea6f3fa004cf4abb242ccf2136c38e3fa8576e44fd9.scope,service1,2023-12-13 14:29:30.763000064,0.406332
+4,container_cpu_usage_seconds_total,ui,total,/system.slice/docker-c8c0b2a647f27457be51f5e87dee2792cbd2af2606ffa4fcd22e972e4a836f1a.scope,ui,2023-12-13 14:29:30.763000064,18.730017
+5,container_cpu_usage_seconds_total,logify-script,total,/system.slice/docker-41e9b60964070f8b1db74d5ef502ed1caa243baeab8df676520640326fb6cf5c.scope,logify,2023-12-13 14:29:30.763000064,1.016791
+6,container_cpu_usage_seconds_total,prometheus,total,/system.slice/docker-57a3f6a4890962c9d3c22e1782af6739024926805771eee6e9ffcc069a81fcca.scope,prometheus,2023-12-13 14:29:30.763000064,5.718044
+7,container_cpu_usage_seconds_total,service2,total,/system.slice/docker-9a6170df720b9da42e3c11a6e64d62d8b2edaa26e579ea349075a0eeb6fe26ba.scope,service2,2023-12-13 14:29:30.763000064,0.546555

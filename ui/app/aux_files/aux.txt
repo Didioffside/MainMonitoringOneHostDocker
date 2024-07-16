@@ -1,0 +1,5 @@
+all
+fluent-bit
+service1
+service2
+ui

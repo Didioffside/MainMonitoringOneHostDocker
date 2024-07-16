@@ -1,0 +1,16 @@
+version: '3'  
+services: 
+  collect_metrics_api:
+    #image: :latest
+    build: ./collect_metrics_api
+    container_name: collect_metrics_api
+    restart: always
+    ports:
+      - 5010:5010
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    external: true
+    name: monitoring

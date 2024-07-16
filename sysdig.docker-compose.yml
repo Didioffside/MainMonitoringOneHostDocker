@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  sysdig:
+    image: sysdig/sysdig
+    #build:  ./sysdig_files
+    container_name: sysdig
+    privileged: true
+    network_mode: host
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - /dev:/host/dev
+      - /proc:/host/proc:ro
+      - /boot:/host/boot:ro
+      - /src:/src
+      - /lib/modules:/host/lib/modules:ro
+      - /usr:/host/usr:ro
+      - /etc:/host/etc:ro
+      - ./sysdig_files:/src/scripts
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    #entrypoint: ["/bin/sh", "-c", "sysdig -pc 'evt.time=%evt.time,evt.type=%evt.type,evt.args=%evt.args' | /src/scripts/sysdig_to_influxdb.sh"]
+    entrypoint: ["/bin/sh", "-c", "sysdig -p'%evt.num,%evt.time,%evt.cpu,%proc.name,(%thread.tid),%evt.dir,%evt.type,%evt.args' | /src/scripts/sysdig_to_influxdb.sh"]
+    cpus: 0.5
+    mem_limit: 250m
+
+
+volumes:
+  sysdig-data:

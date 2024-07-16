@@ -1,0 +1,92 @@
+version: '3.7'
+services:
+
+  logify-script:
+    image: didioffside/logify:latest
+    networks:
+      - config_network
+
+  fluent-bit:
+    image: fluent/fluent-bit:latest
+    volumes:
+      - ./fluent-bit:/fluent-bit/etc
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: ["fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf", "--enable-hot-reload"]
+    ports:
+      - "24224:24224"
+    networks:
+      - config_network
+
+  service1:
+    image: didioffside/service1:latest
+    ports:
+      - "5000:5000"
+    networks:
+      - config_network
+
+  service2:
+    image: didioffside/service2:latest
+    ports:
+      - "5001:5000"
+    networks:
+      - config_network
+
+  prometheus:
+    image: prom/prometheus
+    privileged: true
+    volumes:
+      - ./prometheus:/etc/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    networks:
+      - config_network
+    
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    privileged: true
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/snap/docker/common/var-lib-docker:/var/lib/docker:ro
+      - /cgroup:/cgroup:ro
+    networks:
+      - config_network
+  
+  node-exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
+    networks:
+      - config_network
+
+  ui:
+    image: didioffside/ui:latest
+    privileged: true
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./options.txt:/app/options.txt
+      - ./selected_options.txt:/app/selected_options.txt
+      - ./selected_options_node.txt:/app/selected_options_node.txt
+      - ./selected_options_logs.txt:/app/selected_options_logs.txt
+      - ./aux.txt:/app/aux.txt
+      - ./try.txt:/app/try.txt
+      - ./prometheus:/app/prometheus
+      - ./fluent-bit:/app/fluent-bit
+      - ./aux.yml:/app/aux.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./get_metrics.py:/app/get_metrics.py
+    depends_on:
+      - prometheus
+
+networks:
+  config_network:
