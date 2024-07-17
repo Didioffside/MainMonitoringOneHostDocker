@@ -1513,6 +1513,7 @@ def run_backup_script():
     print("done", flush=True)
     compress_backup(BACKUP_DIR)
     delete_old_backups(BACKUP_DIR)
+    print("all_done", flush=True)
 
 def perform_backup():
     client = docker.from_env()
@@ -1558,8 +1559,6 @@ print("CORREU TUDO BEM", flush=True)
 background_thread2 = threading.Thread(target=schedule_backup, daemon=True)
 background_thread2.start()
 
-background_thread = threading.Thread(target=run_sysdig, daemon=True)
-background_thread.start()
 
 
 
